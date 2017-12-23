@@ -28,14 +28,18 @@ function toutf8 (opts) {
 
   // detect encoding first
   return peek({newline: newline, maxBuffer: detectSize}, function (data, swap) {
-    if (!Buffer.isBuffer(data)) return swap(new Error('No buffer'))
-    var matches = detect(data)
-    var encoding = matches.length > 0 && matches[0].confidence > conf
-      ? matches[0].charsetName
-      : 'utf8'
-    encoding = getSupportedEncoding(encoding)
-    swap(null, convertFrom(encoding))
-  })
+      if (!Buffer.isBuffer(data)) return swap(new Error('No buffer'))
+      var matches = detect(data)
+      var encoding = 'UTF-8'
+      if (matches.length > 0 && matches[0].confidence > conf) {
+        encoding = matches[0].charsetName
+      }
+      if (opts.noUtf8 && encoding === 'UTF-8' && matches.length > 1 && matches[1].confidence > conf) {
+        encoding = matches[1].charsetName
+      }
+      encoding = getSupportedEncoding(encoding)
+      swap(null, convertFrom(encoding))
+    })
 }
 
 function toutf8sync (buf, opts) {
